@@ -48,12 +48,27 @@ namespace ValorantAgentPicker
 
         private static void StartUp()
         {
+            string agentCSVPath = "";
+            string stratCSVPath = "";
+            try
+            {
+                Global.appDataRoamingPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "REclipsent");
+                Global.roamingFolder = Path.Combine(Global.appDataRoamingPath, "ValorantAgentPicker");
+                Global.settingsFile = Path.Combine(Global.roamingFolder, "settings.json");
+                string directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                agentCSVPath = Path.Combine(directoryPath, "Agents.csv");
+                stratCSVPath = Path.Combine(directoryPath, "Strats.csv");
+            }
+            catch
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("Can't find folder locations app will now exit");
+                Environment.Exit(1);
+            }
             Directory.CreateDirectory(Global.appDataRoamingPath);
             Directory.CreateDirectory(Global.roamingFolder);
 
-            string directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string agentCSVPath = Path.Combine(directoryPath, "Agents.csv");
-            string stratCSVPath = Path.Combine(directoryPath, "Strats.csv");
+            
             AgentList = ReadAgentsFromCsv(agentCSVPath);
             StratList = ReadStratsFromCsv(stratCSVPath);
 
@@ -79,7 +94,17 @@ namespace ValorantAgentPicker
                 Console.WriteLine("2 - Agent Settings - Unavailable");
                 Console.ForegroundColor = ConsoleColor.White;
             }
-            Console.WriteLine("3 - Strat Roulette");
+            if (isStratsLoaded)
+            {
+                Console.WriteLine("3 - Strat Roulette");
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("3 - Strat Roulette - Unavailable");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            
             Console.WriteLine("c - Clear Terminal");
             Console.WriteLine("q - Quit");
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -112,6 +137,11 @@ namespace ValorantAgentPicker
                         Settings.WriteSettings(userSettings);
                         return;
                     case "3":
+                        if (!isStratsLoaded)
+                        {
+                            Console.WriteLine("Strat operations unavaliable");
+                            break;
+                        }
                         inStrat = true;
                         while (inStrat)
                         {
@@ -383,15 +413,25 @@ namespace ValorantAgentPicker
         {
             Random rnd = new Random();
 
-            int index = rnd.Next(StratList.Count);
+            List<Strat> enabledList = new List<Strat>();
 
-            Strat strat = StratList[index];
+            foreach (Strat strat in StratList)
+            {
+                if ((strat.Map == chosenMap | strat.Map == Map.Any) && (strat.Side == chosenSide | strat.Side == TeamSide.Both))
+                {
+                    enabledList.Add(strat);
+                }
+            }
+
+            int index = rnd.Next(enabledList.Count);
+
+            Strat chosenStrat = enabledList[index];
 
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(strat.Name);
-            Console.WriteLine(strat.Description);
-            Console.WriteLine($"Map: {strat.Map}");
-            Console.WriteLine($"Side: {strat.Side}");
+            Console.WriteLine(chosenStrat.Name);
+            Console.WriteLine(chosenStrat.Description);
+            Console.WriteLine($"Map: {chosenStrat.Map}");
+            Console.WriteLine($"Side: {chosenStrat.Side}");
             Console.ResetColor();
         }
 
@@ -443,22 +483,41 @@ namespace ValorantAgentPicker
                 Console.Clear();
                 int i = 0;
 
-                Console.WriteLine($"Currently Selected: {chosenMap}");
+                List<Map> mapList = new List<Map>();
+                foreach (Map map in Enum.GetValues(typeof(Map)))
+                {
+                    mapList.Add(map);
+                }
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Map Selecter");
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Options:");
                 Console.ForegroundColor = ConsoleColor.White;
-                foreach (Map map in Enum.GetValues(typeof(Map)))
+                foreach (Map map in mapList)
                 {
                     Console.WriteLine($"{i} - {map}");
                     i++;
                 }
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine($"Currently Selected: {chosenMap}");
+                Console.WriteLine("Enter Option:");
+                Console.ResetColor();
 
                 Console.Write(">");
                 string input = Console.ReadLine();
-                switch (input)
+                if (input == "q")
                 {
-                    case "q":
-                        return;
+                    return;
+                }
+
+                bool isNum = int.TryParse( input, out int value);
+
+                if (isNum)
+                {
+                    if (value >= 0 && value < mapList.Count)
+                    {
+                        chosenMap = mapList[value];
+                    }
                 }
             }
         }

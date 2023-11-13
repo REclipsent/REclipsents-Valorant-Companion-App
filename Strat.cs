@@ -26,7 +26,8 @@ namespace ValorantAgentPicker
         public string Name;
         public string Description;
         public Map Map;
-        public TeamSide Side; 
+        public TeamSide Side;
+        public bool Enabled;
         public Strat(string name, string desc, Map mapName, TeamSide side)
         {
             Name = name;

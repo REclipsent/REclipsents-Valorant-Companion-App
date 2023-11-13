@@ -9,8 +9,8 @@ namespace ValorantAgentPicker
 {
     internal class Global
     {
-        public static string appDataRoamingPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "REclipsent");
-        public static string roamingFolder = Path.Combine(appDataRoamingPath, "ValorantAgentPicker");
-        public static string settingsFile = Path.Combine(roamingFolder, "settings.json");
+        public static string appDataRoamingPath;
+        public static string roamingFolder;
+        public static string settingsFile;
     }
 }
