@@ -15,8 +15,8 @@ namespace ValorantAgentPicker
     public class Strat
     {
         public string Name;
-        string Description;
-        TeamSide Side; 
+        public string Description;
+        public TeamSide Side; 
         public Strat(string name, string desc, TeamSide side)
         {
             Name = name;
