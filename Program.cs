@@ -21,39 +21,13 @@ namespace ValorantAgentPicker
         private static bool enableDuelists = true;
         private static bool enableSentinels = true;
         private static List<Agent> AgentList = new List<Agent>();
-        //{
-        //    new Agent("Astra", AgentRole.Controller, true),
-        //    new Agent("Brimstone",AgentRole.Controller, true),
-        //    new Agent("Harbor",AgentRole.Controller, true),
-        //    new Agent("Omen",AgentRole.Controller, true),
-        //    new Agent("Viper",AgentRole.Controller, true),
-        //    new Agent("Chamber",AgentRole.Sentinel, true),
-        //    new Agent("Cypher",AgentRole.Sentinel, true),
-        //    new Agent("Deadlock",AgentRole.Sentinel, true),
-        //    new Agent("Killjoy",AgentRole.Sentinel, true),
-        //    new Agent("Sage",AgentRole.Sentinel, true),
-        //    new Agent("Breach",AgentRole.Initiator, true),
-        //    new Agent("Fade",AgentRole.Initiator, true),
-        //    new Agent("Gekko",AgentRole.Initiator, true),
-        //    new Agent("KAY/O",AgentRole.Initiator, true),
-        //    new Agent("Skye",AgentRole.Initiator, true),
-        //    new Agent("Sova",AgentRole.Initiator, true),
-        //    new Agent("Iso",AgentRole.Duelist, true),
-        //    new Agent("Jett",AgentRole.Duelist, true),
-        //    new Agent("Neon",AgentRole.Duelist, true),
-        //    new Agent("Pheonix",AgentRole.Duelist, true),
-        //    new Agent("Raze",AgentRole.Duelist, true),
-        //    new Agent("Reyna",AgentRole.Duelist, true),
-        //    new Agent("Yoru",AgentRole.Duelist, true)
-        //};
         private static bool isAgentsLoaded;
-        private static bool isStratsLoaded;
+        private static bool isStratsLoaded = true;
+        private static AppSettings userSettings;
         static void Main(string[] args)
         {
-            string directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string agentCSVPath = Path.Combine(directoryPath, "Agents.csv");
-            AgentList = ReadAgentsFromCsv(agentCSVPath);
-            if (AgentList != null)
+            StartUp();
+            if (isAgentsLoaded | isStratsLoaded) // TODO Make it only exit when neither strats or Agents are loaded
             {
                 while (true)
                 {
@@ -67,6 +41,18 @@ namespace ValorantAgentPicker
             }
         }
 
+        private static void StartUp()
+        {
+            Directory.CreateDirectory(Global.appDataRoamingPath);
+            Directory.CreateDirectory(Global.roamingFolder);
+
+            string directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string agentCSVPath = Path.Combine(directoryPath, "Agents.csv");
+            AgentList = ReadAgentsFromCsv(agentCSVPath);
+
+            userSettings = Settings.ReadSettings();
+        }
+
         private static void LoadMenu() // TODO: Make it so if isAgentsLoaded is false that you can't roll for an agent but strat roulette is still avaiable same with isStratsLoaded
         {
             Console.ForegroundColor = ConsoleColor.DarkRed;
@@ -74,10 +60,20 @@ namespace ValorantAgentPicker
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Avaiable Operations:");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("1 - Roll an Agent");
-            Console.WriteLine("2 - Settings");
+            if (isAgentsLoaded)
+            {
+                Console.WriteLine("1 - Roll an Agent");
+                Console.WriteLine("2 - Agent Settings");
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("1 - Roll an Agent - Unavailable");
+                Console.WriteLine("2 - Agent Settings - Unavailable");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
             Console.WriteLine("3 - Strat Roulette");
-            Console.WriteLine("4 - Clear Terminal");
+            Console.WriteLine("c - Clear Terminal");
             Console.WriteLine("q - Quit");
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Enter Choice:");
@@ -89,18 +85,29 @@ namespace ValorantAgentPicker
                 switch (input)
                 {
                     case "1":
+                        if (!isAgentsLoaded)
+                        {
+                            Console.WriteLine("Agent operations unavaliable");
+                            break;
+                        }
                         string agent = GetAgent();
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine($"{agent}");
                         Console.ResetColor();
                         break;
                     case "2":
-                        SettingsMenu();
+                        if (!isAgentsLoaded)
+                        {
+                            Console.WriteLine("Agent operations unavaliable");
+                            break;
+                        }
+                        AgentSettingsMenu();
+                        Settings.WriteSettings(userSettings);
                         return;
                     case "3":
                         StratRoulette();
                         break;
-                    case "4":
+                    case "c":
                         Console.Clear();
                         return;
                     case "q":
@@ -137,12 +144,20 @@ namespace ValorantAgentPicker
 
             agent = EnabledList[index];
 
-            string AgentName = agent.Name;
+            string agentName = agent.Name;
 
-            return AgentName;
+            string agentRole = agent.Role.ToString();
+            if (userSettings.returnRole)
+            {
+                return $"{agentName} - {agentRole}";
+            }
+            else
+            {
+                return agentName;
+            }
         }
 
-        private static void SettingsMenu()
+        private static void AgentSettingsMenu()
         {
             bool Invalid = false;
             while (true)
@@ -160,6 +175,7 @@ namespace ValorantAgentPicker
                 Console.WriteLine($"3: Initiators: {enableInitiators}");
                 Console.WriteLine($"4: Duelists: {enableDuelists}");
                 Console.WriteLine($"5: Indvidual Agents Menu");
+                Console.WriteLine($"6: Print Agents Role: {userSettings.returnRole}");
                 Console.WriteLine("q - Return");
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("Enter Choice:");
@@ -201,6 +217,9 @@ namespace ValorantAgentPicker
                             Console.Clear();
                             return;
                         }
+                        break;
+                    case "6":
+                        userSettings.returnRole = !userSettings.returnRole;
                         break;
                     case "q":
                         Console.Clear();
@@ -363,3 +382,29 @@ namespace ValorantAgentPicker
         }
     }
 }
+
+//{
+//    new Agent("Astra", AgentRole.Controller, true),
+//    new Agent("Brimstone",AgentRole.Controller, true),
+//    new Agent("Harbor",AgentRole.Controller, true),
+//    new Agent("Omen",AgentRole.Controller, true),
+//    new Agent("Viper",AgentRole.Controller, true),
+//    new Agent("Chamber",AgentRole.Sentinel, true),
+//    new Agent("Cypher",AgentRole.Sentinel, true),
+//    new Agent("Deadlock",AgentRole.Sentinel, true),
+//    new Agent("Killjoy",AgentRole.Sentinel, true),
+//    new Agent("Sage",AgentRole.Sentinel, true),
+//    new Agent("Breach",AgentRole.Initiator, true),
+//    new Agent("Fade",AgentRole.Initiator, true),
+//    new Agent("Gekko",AgentRole.Initiator, true),
+//    new Agent("KAY/O",AgentRole.Initiator, true),
+//    new Agent("Skye",AgentRole.Initiator, true),
+//    new Agent("Sova",AgentRole.Initiator, true),
+//    new Agent("Iso",AgentRole.Duelist, true),
+//    new Agent("Jett",AgentRole.Duelist, true),
+//    new Agent("Neon",AgentRole.Duelist, true),
+//    new Agent("Pheonix",AgentRole.Duelist, true),
+//    new Agent("Raze",AgentRole.Duelist, true),
+//    new Agent("Reyna",AgentRole.Duelist, true),
+//    new Agent("Yoru",AgentRole.Duelist, true)
+//};
