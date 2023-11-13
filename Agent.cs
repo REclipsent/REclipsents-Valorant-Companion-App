@@ -19,11 +19,11 @@ namespace ValorantAgentPicker
         public AgentRole Role;
         public bool Enabled;
 
-        public Agent(string name, AgentRole role, bool enabled)
+        public Agent(string agentName, AgentRole agentRole, bool isEnabled)
         {
-            Name = name;
-            Role = role;
-            Enabled = enabled;
+            Name = agentName;
+            Role = agentRole;
+            Enabled = isEnabled;
         }
     }
 }

@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
+using CsvHelper;
+using CsvHelper.Configuration;
 
 namespace ValorantAgentPicker
 {
@@ -17,37 +22,48 @@ namespace ValorantAgentPicker
         private static bool enableInitiators = true;
         private static bool enableDuelists = true;
         private static bool enableSentinels = true;
-        private static List<Agent> AgentList = new List<Agent>
-            {
-                new Agent("Astra", AgentRole.Controller, true),
-                new Agent("Brimstone",AgentRole.Controller, true),
-                new Agent("Harbor",AgentRole.Controller, true),
-                new Agent("Omen",AgentRole.Controller, true),
-                new Agent("Viper",AgentRole.Controller, true),
-                new Agent("Chamber",AgentRole.Sentinel, true),
-                new Agent("Cypher",AgentRole.Sentinel, true),
-                new Agent("Deadlock",AgentRole.Sentinel, true),
-                new Agent("Killjoy",AgentRole.Sentinel, true),
-                new Agent("Sage",AgentRole.Sentinel, true),
-                new Agent("Breach",AgentRole.Initiator, true),
-                new Agent("Fade",AgentRole.Initiator, true),
-                new Agent("Gekko",AgentRole.Initiator, true),
-                new Agent("KAY/O",AgentRole.Initiator, true),
-                new Agent("Skye",AgentRole.Initiator, true),
-                new Agent("Sova",AgentRole.Initiator, true),
-                new Agent("Iso",AgentRole.Duelist, true),
-                new Agent("Jett",AgentRole.Duelist, true),
-                new Agent("Neon",AgentRole.Duelist, true),
-                new Agent("Pheonix",AgentRole.Duelist, true),
-                new Agent("Raze",AgentRole.Duelist, true),
-                new Agent("Reyna",AgentRole.Duelist, true),
-                new Agent("Yoru",AgentRole.Duelist, true)
-            };
+        private static List<Agent> AgentList = new List<Agent>();
+        //{
+        //    new Agent("Astra", AgentRole.Controller, true),
+        //    new Agent("Brimstone",AgentRole.Controller, true),
+        //    new Agent("Harbor",AgentRole.Controller, true),
+        //    new Agent("Omen",AgentRole.Controller, true),
+        //    new Agent("Viper",AgentRole.Controller, true),
+        //    new Agent("Chamber",AgentRole.Sentinel, true),
+        //    new Agent("Cypher",AgentRole.Sentinel, true),
+        //    new Agent("Deadlock",AgentRole.Sentinel, true),
+        //    new Agent("Killjoy",AgentRole.Sentinel, true),
+        //    new Agent("Sage",AgentRole.Sentinel, true),
+        //    new Agent("Breach",AgentRole.Initiator, true),
+        //    new Agent("Fade",AgentRole.Initiator, true),
+        //    new Agent("Gekko",AgentRole.Initiator, true),
+        //    new Agent("KAY/O",AgentRole.Initiator, true),
+        //    new Agent("Skye",AgentRole.Initiator, true),
+        //    new Agent("Sova",AgentRole.Initiator, true),
+        //    new Agent("Iso",AgentRole.Duelist, true),
+        //    new Agent("Jett",AgentRole.Duelist, true),
+        //    new Agent("Neon",AgentRole.Duelist, true),
+        //    new Agent("Pheonix",AgentRole.Duelist, true),
+        //    new Agent("Raze",AgentRole.Duelist, true),
+        //    new Agent("Reyna",AgentRole.Duelist, true),
+        //    new Agent("Yoru",AgentRole.Duelist, true)
+        //};
         static void Main(string[] args)
         {
-            while (true)
+            string directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string agentCSVPath = Path.Combine(directoryPath, "Agents.csv");
+            AgentList = ReadAgentsFromCsv(agentCSVPath);
+            if (AgentList != null)
             {
-                LoadMenu();
+                while (true)
+                {
+                    LoadMenu();
+                }
+            }
+            else
+            {
+                Console.WriteLine("App will now exit");
+                Console.ReadLine();
             }
         }
 
@@ -60,7 +76,8 @@ namespace ValorantAgentPicker
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("1 - Roll an Agent");
             Console.WriteLine("2 - Settings");
-            Console.WriteLine("3 - Clear Terminal");
+            Console.WriteLine("3 - Strat Roulette");
+            Console.WriteLine("4 - Clear Terminal");
             Console.WriteLine("q - Quit");
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Enter Choice:");
@@ -81,6 +98,9 @@ namespace ValorantAgentPicker
                         SettingsMenu();
                         return;
                     case "3":
+                        StratRoulette();
+                        break;
+                    case "4":
                         Console.Clear();
                         return;
                     case "q":
@@ -286,6 +306,53 @@ namespace ValorantAgentPicker
                     agent.Enabled = state;
                 }
             }
+        }
+
+        private static void StratRoulette()
+        {
+            Console.WriteLine("Not Done");
+        }
+
+        static List<Agent> ReadAgentsFromCsv(string filePath)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("Reading Agents from CSV...");
+
+            List<Agent> agents = new List<Agent>();
+            try
+            {
+                using (StreamReader sr = new StreamReader(filePath))
+                {
+                    while (!sr.EndOfStream)
+                    {
+                        string line = sr.ReadLine();
+                        string[] values = line.Split(',');
+
+                        if (values.Length == 2)
+                        {
+                            string name = values[0];
+                            string stringRole = values[1];
+
+                            Enum.TryParse(stringRole, out AgentRole role);
+
+                            Agent agent = new Agent(name, role, true);
+                            agents.Add(agent);
+                        }
+                    }
+                }
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                Console.WriteLine("Agents.csv dosen't exist inside the executing folder");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Their was an unkown error reading CSV file:\n{ex}");
+                return null;
+            }
+            Console.WriteLine("Loaded Agent List");
+            return agents;
         }
     }
 }
