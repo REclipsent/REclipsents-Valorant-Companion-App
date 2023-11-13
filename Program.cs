@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ValorantAgentPicker
@@ -25,6 +26,9 @@ namespace ValorantAgentPicker
         private static bool isAgentsLoaded;
         private static bool isStratsLoaded = true;
         private static AppSettings userSettings;
+        private static Map chosenMap = Map.Any;
+        private static TeamSide chosenSide = TeamSide.Both;
+        private static bool inStrat = true;
         static void Main(string[] args)
         {
             StartUp();
@@ -108,7 +112,11 @@ namespace ValorantAgentPicker
                         Settings.WriteSettings(userSettings);
                         return;
                     case "3":
-                        StratRouletteMenu();
+                        inStrat = true;
+                        while (inStrat)
+                        {
+                            StratRouletteMenu();
+                        }
                         Console.Clear();
                         return;
                     case "c":
@@ -342,8 +350,9 @@ namespace ValorantAgentPicker
             Console.WriteLine("Valorant Strat Roulette Menu");
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Choose Operation");
-            Console.ForegroundColor= ConsoleColor.White;
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("1 - Roll Strat");
+            Console.WriteLine("2 - Strat Settings");
             Console.WriteLine("q - Return to Main Menu");
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Enter Choice:");
@@ -357,7 +366,11 @@ namespace ValorantAgentPicker
                     case "1":
                         RollStrat();
                         break;
+                    case "2":
+                        StratSettingsMenu();
+                        return;
                     case "q":
+                        inStrat = false;
                         return;
                     default:
                         Console.WriteLine("Invalid");
@@ -381,6 +394,75 @@ namespace ValorantAgentPicker
             Console.WriteLine($"Side: {strat.Side}");
             Console.ResetColor();
         }
+
+        private static void StratSettingsMenu()
+        {
+            bool isInvalid = false;
+            while (true)
+            {
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Strat Roulette Settings");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Avaliable Settings:");
+                Console.ForegroundColor= ConsoleColor.White;
+                Console.WriteLine($"1 - Chosen Map: {chosenMap}");
+                Console.WriteLine($"2 - Chosen Side: {chosenSide}");
+                Console.WriteLine($"q - Return");
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine("Enter Choice:");
+                Console.ResetColor();
+                if ( isInvalid )
+                {
+                    Console.WriteLine("Invalid");
+                    isInvalid = false;
+                }
+                Console.Write(">");
+                string input = Console.ReadLine();
+
+                switch (input)
+                {
+                    case "1":
+                        ChoseMap();
+                        break;
+                    case "2":
+                        break;
+                    case "q":
+                        return;
+                    default:
+                        isInvalid = true;
+                        break;
+                }
+            }
+        }
+
+        private static void ChoseMap()
+        {
+            while (true)
+            {
+                Console.Clear();
+                int i = 0;
+
+                Console.WriteLine($"Currently Selected: {chosenMap}");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Options:");
+                Console.ForegroundColor = ConsoleColor.White;
+                foreach (Map map in Enum.GetValues(typeof(Map)))
+                {
+                    Console.WriteLine($"{i} - {map}");
+                    i++;
+                }
+
+                Console.Write(">");
+                string input = Console.ReadLine();
+                switch (input)
+                {
+                    case "q":
+                        return;
+                }
+            }
+        }
+
 
         static List<Agent> ReadAgentsFromCsv(string filePath)
         {
