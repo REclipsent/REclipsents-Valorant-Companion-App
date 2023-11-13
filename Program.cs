@@ -46,6 +46,8 @@ namespace ValorantAgentPicker
         //    new Agent("Reyna",AgentRole.Duelist, true),
         //    new Agent("Yoru",AgentRole.Duelist, true)
         //};
+        private static bool isAgentsLoaded;
+        private static bool isStratsLoaded;
         static void Main(string[] args)
         {
             string directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -65,7 +67,7 @@ namespace ValorantAgentPicker
             }
         }
 
-        private static void LoadMenu()
+        private static void LoadMenu() // TODO: Make it so if isAgentsLoaded is false that you can't roll for an agent but strat roulette is still avaiable same with isStratsLoaded
         {
             Console.ForegroundColor = ConsoleColor.DarkRed;
             Console.WriteLine($"Valorant Agent Picker - v{ver}");
@@ -220,10 +222,14 @@ namespace ValorantAgentPicker
                 int index;
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine("Agents:");
+                Console.ForegroundColor= ConsoleColor.Red;
+                Console.WriteLine("Enter Number to toggle agent");
                 Console.ForegroundColor = ConsoleColor.White;
                 PrintAgents();
+                Console.WriteLine("s - Return to settings");
+                Console.WriteLine("q - Return to main screen");
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine("Enter Number to toggle agent,\ns to return to settings,\nq to return to main screen");
+                Console.WriteLine("Enter Choice:");
                 Console.ResetColor();
                 if (OutofRange)
                 {
@@ -342,14 +348,17 @@ namespace ValorantAgentPicker
             catch (System.IO.FileNotFoundException)
             {
                 Console.WriteLine("Agents.csv dosen't exist inside the executing folder");
+                isAgentsLoaded = false;
                 return null;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Their was an unkown error reading CSV file:\n{ex}");
+                isAgentsLoaded = false;
                 return null;
             }
             Console.WriteLine("Loaded Agent List");
+            isAgentsLoaded = true;
             return agents;
         }
     }
