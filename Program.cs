@@ -21,6 +21,7 @@ namespace ValorantAgentPicker
         private static bool enableDuelists = true;
         private static bool enableSentinels = true;
         private static List<Agent> AgentList = new List<Agent>();
+        private static List<Strat> StratList = new List<Strat>();
         private static bool isAgentsLoaded;
         private static bool isStratsLoaded = true;
         private static AppSettings userSettings;
@@ -48,7 +49,9 @@ namespace ValorantAgentPicker
 
             string directoryPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string agentCSVPath = Path.Combine(directoryPath, "Agents.csv");
+            string stratCSVPath = Path.Combine(directoryPath, "Strats.csv");
             AgentList = ReadAgentsFromCsv(agentCSVPath);
+            StratList = ReadStratsFromCsv(stratCSVPath);
 
             userSettings = Settings.ReadSettings();
         }
@@ -105,8 +108,9 @@ namespace ValorantAgentPicker
                         Settings.WriteSettings(userSettings);
                         return;
                     case "3":
-                        StratRoulette();
-                        break;
+                        StratRouletteMenu();
+                        Console.Clear();
+                        return;
                     case "c":
                         Console.Clear();
                         return;
@@ -331,15 +335,57 @@ namespace ValorantAgentPicker
             }
         }
 
-        private static void StratRoulette()
+        private static void StratRouletteMenu()
         {
-            Console.WriteLine("Not Done");
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine("Valorant Strat Roulette Menu");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Choose Operation");
+            Console.ForegroundColor= ConsoleColor.White;
+            Console.WriteLine("1 - Roll Strat");
+            Console.WriteLine("q - Return to Main Menu");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("Enter Choice:");
+            Console.ResetColor();
+            while (true)
+            {
+                Console.Write(">");
+                string input = Console.ReadLine();
+                switch (input)
+                {
+                    case "1":
+                        RollStrat();
+                        break;
+                    case "q":
+                        return;
+                    default:
+                        Console.WriteLine("Invalid");
+                        break;
+                }
+            }
+        }
+
+        private static void RollStrat()
+        {
+            Random rnd = new Random();
+
+            int index = rnd.Next(StratList.Count);
+
+            Strat strat = StratList[index];
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(strat.Name);
+            Console.WriteLine(strat.Description);
+            Console.WriteLine($"Map: {strat.Map}");
+            Console.WriteLine($"Side: {strat.Side}");
+            Console.ResetColor();
         }
 
         static List<Agent> ReadAgentsFromCsv(string filePath)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Reading Agents from CSV...");
+            Console.WriteLine("(1/2) Reading Agents from CSV...");
 
             List<Agent> agents = new List<Agent>();
             try
@@ -376,9 +422,58 @@ namespace ValorantAgentPicker
                 isAgentsLoaded = false;
                 return null;
             }
-            Console.WriteLine("Loaded Agent List");
+            Console.WriteLine($"Loaded {agents.Count} Agents from List");
             isAgentsLoaded = true;
             return agents;
+        }
+
+        static List<Strat> ReadStratsFromCsv(string filePath)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("(2/2) Reading Strats from CSV...");
+
+            List<Strat> strats = new List<Strat>();
+            try
+            {
+                using (StreamReader sr = new StreamReader(filePath))
+                {
+                    while (!sr.EndOfStream)
+                    {
+                        string line = sr.ReadLine();
+                        string[] values = line.Split(',');
+
+                        if (values.Length == 4)
+                        {
+                            string name = values[0];
+                            string desc = values[1];
+                            string mapString = values[2];
+                            string sideString = values[3];
+
+                            Enum.TryParse(mapString, out Map map);
+
+                            Enum.TryParse(sideString, out TeamSide side);
+
+                            Strat strat = new Strat(name, desc, map, side);
+                            strats.Add(strat);
+                        }
+                    }
+                }
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                Console.WriteLine("Strats.csv dosen't exist inside the executing folder");
+                isStratsLoaded = false;
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Their was an unkown error reading CSV file:\n{ex}");
+                isStratsLoaded = false;
+                return null;
+            }
+            Console.WriteLine($"Loaded {strats.Count} Strats from List");
+            isStratsLoaded = true;
+            return strats;
         }
     }
 }
