@@ -16,7 +16,7 @@ namespace ValorantAgentPicker
 {
     internal class Program
     {
-        private static string ver = CurFileVersion();
+        private static string ver;
         private static bool enableControllers = true;
         private static bool enableInitiators = true;
         private static bool enableDuelists = true;
@@ -28,21 +28,13 @@ namespace ValorantAgentPicker
         private static AppSettings userSettings;
         private static Map chosenMap = Map.Any;
         private static TeamSide chosenSide = TeamSide.Both;
-        private static bool inStrat = true;
+        private static bool inDeeper = true;
         static void Main(string[] args)
         {
             StartUp();
-            if (isAgentsLoaded | isStratsLoaded) // TODO Make it only exit when neither strats or Agents are loaded
+            while (true)
             {
-                while (true)
-                {
-                    LoadMenu();
-                }
-            }
-            else
-            {
-                Console.WriteLine("App will now exit");
-                Console.ReadLine();
+                LoadMenu();
             }
         }
 
@@ -52,6 +44,7 @@ namespace ValorantAgentPicker
             string stratCSVPath = "";
             try
             {
+                ver = CurFileVersion();
                 Global.appDataRoamingPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "REclipsent");
                 Global.roamingFolder = Path.Combine(Global.appDataRoamingPath, "ValorantAgentPicker");
                 Global.settingsFile = Path.Combine(Global.roamingFolder, "settings.json");
@@ -75,36 +68,35 @@ namespace ValorantAgentPicker
             userSettings = Settings.ReadSettings();
         }
 
-        private static void LoadMenu() // TODO: Make it so if isAgentsLoaded is false that you can't roll for an agent but strat roulette is still avaiable same with isStratsLoaded
+        private static void LoadMenu()
         {
             Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine($"Valorant Agent Picker - v{ver}");
+            Console.WriteLine($"REclipsent's Valorant Companion App - v{ver}");
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Avaiable Operations:");
             Console.ForegroundColor = ConsoleColor.White;
             if (isAgentsLoaded)
             {
-                Console.WriteLine("1 - Roll an Agent");
-                Console.WriteLine("2 - Agent Settings");
+                Console.WriteLine("1 - Agent Roulette");
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("1 - Roll an Agent - Unavailable");
-                Console.WriteLine("2 - Agent Settings - Unavailable");
+                Console.WriteLine("1 - Agent Roulette - Unavailable");
                 Console.ForegroundColor = ConsoleColor.White;
             }
             if (isStratsLoaded)
             {
-                Console.WriteLine("3 - Strat Roulette");
+                Console.WriteLine("2 - Strat Roulette");
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("3 - Strat Roulette - Unavailable");
+                Console.WriteLine("2 - Strat Roulette - Unavailable");
                 Console.ForegroundColor = ConsoleColor.White;
             }
-            
+
+            Console.WriteLine("3 - Settings");
             Console.WriteLine("c - Clear Terminal");
             Console.WriteLine("q - Quit");
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -122,39 +114,80 @@ namespace ValorantAgentPicker
                             Console.WriteLine("Agent operations unavaliable");
                             break;
                         }
-                        string agent = GetAgent();
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine($"{agent}");
-                        Console.ResetColor();
-                        break;
-                    case "2":
-                        if (!isAgentsLoaded)
+                        inDeeper = true;
+                        while (inDeeper)
                         {
-                            Console.WriteLine("Agent operations unavaliable");
-                            break;
+                            AgentMenu();
                         }
-                        AgentSettingsMenu();
-                        Settings.WriteSettings(userSettings);
+                        Console.Clear();
                         return;
-                    case "3":
+                    case "2":
                         if (!isStratsLoaded)
                         {
                             Console.WriteLine("Strat operations unavaliable");
                             break;
                         }
-                        inStrat = true;
-                        while (inStrat)
+                        inDeeper = true;
+                        while (inDeeper)
                         {
                             StratRouletteMenu();
                         }
+                        Console.Clear();
+                        return;
+                    case "3":
                         Console.Clear();
                         return;
                     case "c":
                         Console.Clear();
                         return;
                     case "q":
+                        Settings.WriteSettings(userSettings);
                         Environment.Exit(0);
                         break;
+                    default:
+                        Console.WriteLine("Invalid");
+                        break;
+                }
+            }
+        }
+
+        private static void AgentMenu()
+        {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine("Valorant Agent Roulette Menu");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Choose Operation");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("1 - Roll an Agent");
+            Console.WriteLine("2 - Agent Settings");
+            Console.WriteLine("c - Clear Terminal");
+            Console.WriteLine("q - Return to Main Menu");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("Enter Choice:");
+            Console.ResetColor();
+            while (true)
+            {
+                Console.Write(">");
+                string input = Console.ReadLine();
+                switch (input)
+                {
+                    case "1":
+                        string agent = GetAgent();
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine($"{agent}");
+                        Console.ResetColor();
+                        break;
+                    case "2":
+                        AgentSettingsMenu();
+                        Settings.WriteSettings(userSettings);
+                        return;
+                    case "c":
+                        Console.Clear();
+                        return;
+                    case "q":
+                        inDeeper = false;
+                        return;
                     default:
                         Console.WriteLine("Invalid");
                         break;
@@ -253,7 +286,7 @@ namespace ValorantAgentPicker
                         ToggleAgents(AgentRole.Duelist, enableDuelists);
                         break;
                     case "5":
-                        bool returnToMain = AgentMenu();
+                        bool returnToMain = ToggleAgentMenu();
                         if (returnToMain)
                         {
                             Console.Clear();
@@ -273,7 +306,7 @@ namespace ValorantAgentPicker
             }
         }
 
-        private static bool AgentMenu()
+        private static bool ToggleAgentMenu()
         {
             bool OutofRange = false;
             bool Invalid = false;
@@ -383,6 +416,7 @@ namespace ValorantAgentPicker
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("1 - Roll Strat");
             Console.WriteLine("2 - Strat Settings");
+            Console.WriteLine("c - Clear Terminal");
             Console.WriteLine("q - Return to Main Menu");
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Enter Choice:");
@@ -399,8 +433,11 @@ namespace ValorantAgentPicker
                     case "2":
                         StratSettingsMenu();
                         return;
+                    case "c":
+                        Console.Clear();
+                        return;
                     case "q":
-                        inStrat = false;
+                        inDeeper = false;
                         return;
                     default:
                         Console.WriteLine("Invalid");
@@ -499,6 +536,7 @@ namespace ValorantAgentPicker
                     Console.WriteLine($"{i} - {map}");
                     i++;
                 }
+                Console.WriteLine("q - Return");
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine($"Currently Selected: {chosenMap}");
                 Console.WriteLine("Enter Option:");
@@ -545,6 +583,7 @@ namespace ValorantAgentPicker
                     Console.WriteLine($"{i} - {side}");
                     i++;
                 }
+                Console.WriteLine("q - Return");
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine($"Currently Selected: {chosenSide}");
                 Console.WriteLine("Enter Option:");
