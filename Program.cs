@@ -32,7 +32,6 @@ namespace ValorantAgentPicker
         static void Main(string[] args)
         {
             StartUp();
-            CleanConsole();
             while (true)
             {
                 LoadMenu();
