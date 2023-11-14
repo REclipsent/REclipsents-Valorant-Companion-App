@@ -11,6 +11,7 @@ namespace ValorantAgentPicker
     public class AppSettings
     {
         public bool returnRole { get; set; }
+        public ConsoleColor userBackgroundColor { get; set; }
     }
     internal class Settings
     {
@@ -29,7 +30,8 @@ namespace ValorantAgentPicker
             }
             AppSettings defaultSettings = new AppSettings
             {
-                returnRole = true
+                returnRole = true,
+                userBackgroundColor = ConsoleColor.Black
             };
             return defaultSettings;
         }

@@ -32,6 +32,7 @@ namespace ValorantAgentPicker
         static void Main(string[] args)
         {
             StartUp();
+            CleanConsole();
             while (true)
             {
                 LoadMenu();
@@ -58,14 +59,19 @@ namespace ValorantAgentPicker
                 Console.WriteLine("Can't find folder locations app will now exit");
                 Environment.Exit(1);
             }
+            userSettings = Settings.ReadSettings();
+            CleanConsole();
+
+            Console.WriteLine("Startup Started");
+
+            Console.Clear();
+
             Directory.CreateDirectory(Global.appDataRoamingPath);
             Directory.CreateDirectory(Global.roamingFolder);
 
             
             AgentList = ReadAgentsFromCsv(agentCSVPath);
             StratList = ReadStratsFromCsv(stratCSVPath);
-
-            userSettings = Settings.ReadSettings();
         }
 
         private static void LoadMenu()
@@ -101,7 +107,7 @@ namespace ValorantAgentPicker
             Console.WriteLine("q - Quit");
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Enter Choice:");
-            Console.ResetColor();
+            CleanConsole();
             while (true)
             {
                 Console.Write(">");
@@ -135,6 +141,7 @@ namespace ValorantAgentPicker
                         Console.Clear();
                         return;
                     case "3":
+                        AppSettingsMenu();
                         Console.Clear();
                         return;
                     case "c":
@@ -151,6 +158,99 @@ namespace ValorantAgentPicker
             }
         }
 
+        private static void AppSettingsMenu()
+        {
+            bool Invalid = false;
+            while (true)
+            {
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Settings:");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Enter Number to Change Setting");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine($"1: Color of Window");
+                Console.WriteLine("q - Return");
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine("Enter Choice:");
+                CleanConsole();
+                if (Invalid)
+                {
+                    Console.WriteLine("Invalid Input");
+                    Console.Write(">");
+                    Invalid = false;
+                }
+                else
+                {
+                    Console.Write(">");
+                }
+                string input = Console.ReadLine();
+
+                switch (input)
+                {
+                    case "1":
+                        ChangeConsoleColor();
+                        Settings.WriteSettings(userSettings);
+                        break;
+                    case "q":
+                        Console.Clear();
+                        return;
+                    default:
+                        Invalid = true;
+                        break;
+                }
+            }
+        }
+
+        private static void ChangeConsoleColor()
+        {
+            while (true)
+            {
+                Console.Clear();
+                int i = 0;
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Color Change Settings:");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Enter Number to Change Color");
+                Console.ForegroundColor = ConsoleColor.White;
+                ConsoleColor[] consoleColors = (ConsoleColor[])Enum.GetValues(typeof(ConsoleColor));
+                foreach (ConsoleColor color in consoleColors)
+                {
+                    Console.WriteLine($"{i} - {color}");
+                    i++;
+                }
+                Console.WriteLine("q - Return");
+                Console.ForegroundColor= ConsoleColor.Cyan;
+                Console.WriteLine("Enter Number:");
+                CleanConsole();
+                Console.Write(">");
+                string input = Console.ReadLine();
+
+                if (input == "q")
+                {
+                    return;
+                }
+
+                bool isNum = int.TryParse(input, out int value);
+
+                if (isNum)
+                {
+                    if (value >= 0 && value < consoleColors.Length)
+                    {
+                        ConsoleColor chosenColor = consoleColors[value];
+                        userSettings.userBackgroundColor = chosenColor;
+                        Console.BackgroundColor = userSettings.userBackgroundColor;
+                    }
+                }
+            }
+        }
+
+        private static void CleanConsole()
+        {
+            Console.ResetColor();
+            Console.BackgroundColor = userSettings.userBackgroundColor;
+        }
+
         private static void AgentMenu()
         {
             Console.Clear();
@@ -165,7 +265,7 @@ namespace ValorantAgentPicker
             Console.WriteLine("q - Return to Main Menu");
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Enter Choice:");
-            Console.ResetColor();
+            CleanConsole();
             while (true)
             {
                 Console.Write(">");
@@ -176,7 +276,7 @@ namespace ValorantAgentPicker
                         string agent = GetAgent();
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine($"{agent}");
-                        Console.ResetColor();
+                        CleanConsole();
                         break;
                     case "2":
                         AgentSettingsMenu();
@@ -254,7 +354,7 @@ namespace ValorantAgentPicker
                 Console.WriteLine("q - Return");
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("Enter Choice:");
-                Console.ResetColor();
+                CleanConsole();
                 if (Invalid)
                 {
                     Console.WriteLine("Invalid Input");
@@ -324,7 +424,7 @@ namespace ValorantAgentPicker
                 Console.WriteLine("q - Return to main screen");
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("Enter Choice:");
-                Console.ResetColor();
+                CleanConsole();
                 if (OutofRange)
                 {
                     Console.WriteLine("Input Out of Range");
@@ -420,7 +520,7 @@ namespace ValorantAgentPicker
             Console.WriteLine("q - Return to Main Menu");
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Enter Choice:");
-            Console.ResetColor();
+            CleanConsole();
             while (true)
             {
                 Console.Write(">");
@@ -469,7 +569,7 @@ namespace ValorantAgentPicker
             Console.WriteLine(chosenStrat.Description);
             Console.WriteLine($"Map: {chosenStrat.Map}");
             Console.WriteLine($"Side: {chosenStrat.Side}");
-            Console.ResetColor();
+            CleanConsole();
         }
 
         private static void StratSettingsMenu()
@@ -488,7 +588,7 @@ namespace ValorantAgentPicker
                 Console.WriteLine($"q - Return");
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("Enter Choice:");
-                Console.ResetColor();
+                CleanConsole();
                 if ( isInvalid )
                 {
                     Console.WriteLine("Invalid");
@@ -540,7 +640,7 @@ namespace ValorantAgentPicker
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine($"Currently Selected: {chosenMap}");
                 Console.WriteLine("Enter Option:");
-                Console.ResetColor();
+                CleanConsole();
 
                 Console.Write(">");
                 string input = Console.ReadLine();
@@ -587,7 +687,7 @@ namespace ValorantAgentPicker
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine($"Currently Selected: {chosenSide}");
                 Console.WriteLine("Enter Option:");
-                Console.ResetColor();
+                CleanConsole();
 
                 Console.Write(">");
                 string input = Console.ReadLine();

@@ -12,5 +12,6 @@ namespace ValorantAgentPicker
         public static string appDataRoamingPath;
         public static string roamingFolder;
         public static string settingsFile;
+        public static ConsoleColor backgroundColor;
     }
 }
