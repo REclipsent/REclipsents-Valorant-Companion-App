@@ -9,11 +9,16 @@ namespace ValorantAgentPicker
     public enum Map
     {
         Any,
-        Breeze,
-        Pearl,
-        Split,
+        Bind,
         Haven,
-        Bind
+        Split,
+        Ascent,
+        Icebox,
+        Breeze,
+        Fracture,
+        Pearl,
+        Lotus,
+        Sunset
     }
     public enum TeamSide
     {

@@ -466,6 +466,7 @@ namespace ValorantAgentPicker
                         ChoseMap();
                         break;
                     case "2":
+                        ChoseSide();
                         break;
                     case "q":
                         return;
@@ -517,6 +518,52 @@ namespace ValorantAgentPicker
                     if (value >= 0 && value < mapList.Count)
                     {
                         chosenMap = mapList[value];
+                    }
+                }
+            }
+        }
+
+        private static void ChoseSide()
+        {
+            while (true)
+            {
+                Console.Clear();
+                int i = 0;
+
+                List<TeamSide> sideList = new List<TeamSide>();
+                foreach (TeamSide side in Enum.GetValues(typeof(TeamSide)))
+                {
+                    sideList.Add(side);
+                }
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine("Map Selecter");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Options:");
+                Console.ForegroundColor = ConsoleColor.White;
+                foreach (TeamSide side in sideList)
+                {
+                    Console.WriteLine($"{i} - {side}");
+                    i++;
+                }
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine($"Currently Selected: {chosenSide}");
+                Console.WriteLine("Enter Option:");
+                Console.ResetColor();
+
+                Console.Write(">");
+                string input = Console.ReadLine();
+                if (input == "q")
+                {
+                    return;
+                }
+
+                bool isNum = int.TryParse(input, out int value);
+
+                if (isNum)
+                {
+                    if (value >= 0 && value < sideList.Count)
+                    {
+                        chosenSide = sideList[value];
                     }
                 }
             }
