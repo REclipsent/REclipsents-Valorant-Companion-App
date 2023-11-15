@@ -1,4 +1,4 @@
-# ValorantAgentPicker
+# REclipsent's Valorant Companion App
 
 ### Config
 
