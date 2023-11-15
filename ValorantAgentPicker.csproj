@@ -78,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Agent.cs" />
+    <Compile Include="Beta.cs" />
     <Compile Include="Global.cs" />
     <Compile Include="Legend.cs" />
     <Compile Include="Program.cs" />

@@ -76,12 +76,15 @@ namespace ValorantAgentPicker
 
         private static void LoadMenu()
         {
+            AnsiConsole.MarkupLine($"[maroon]REclipsent's Valorant Companion App - v{ver}[/]");
+            
+            var selections = new SelectionPrompt<string>();
+
             string strAgentRoul = "[white]Agent Roulette[/]";
             string strStratRoul = "[white]Strat Roulette[/]";
             string strSetting = "[white]Settings[/]";
             string strQuit = "[white]Quit[/]";
-            AnsiConsole.MarkupLine($"[maroon]REclipsent's Valorant Companion App - v{ver}[/]");
-            var selections = new SelectionPrompt<string>();
+            string strBeta = "[slowblink red1]Beta Release Notes[/]";
 
             if (isAgentsLoaded)
             {
@@ -97,8 +100,17 @@ namespace ValorantAgentPicker
             }
             else
             {
-                selections.AddChoice("[red]Strat Roulette - Unavailable[/]");
+                selections.AddChoice("[red3_1]Strat Roulette - Unavailable[/]");
             }
+
+            if (Beta.betaBuild)
+            {
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[rapidblink red1]BETA BUILD - 1[/]");
+                AnsiConsole.WriteLine();
+                selections.AddChoice(strBeta);
+            }
+
             selections.AddChoices(
                 strSetting, strQuit
                 );
@@ -139,6 +151,11 @@ namespace ValorantAgentPicker
             {
                 Settings.WriteSettings(userSettings);
                 Environment.Exit(0);
+            }
+            else if (input == strBeta)
+            {
+                Beta.PrintBetaInfo();
+                Console.Clear();
             }
             else
             {
