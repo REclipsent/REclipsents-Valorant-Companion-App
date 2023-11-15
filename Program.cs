@@ -11,6 +11,7 @@ using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Spectre.Console;
 
 namespace ValorantAgentPicker
 {
@@ -29,6 +30,7 @@ namespace ValorantAgentPicker
         private static Map chosenMap = Map.Any;
         private static TeamSide chosenSide = TeamSide.Both;
         private static bool inDeeper = true;
+        private static string message = "";
         static void Main(string[] args)
         {
             StartUp();
@@ -54,8 +56,7 @@ namespace ValorantAgentPicker
             }
             catch
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("Can't find folder locations app will now exit");
+                AnsiConsole.WriteLine("[red]Can't find folder locations app will now exit[/]");
                 Environment.Exit(1);
             }
             userSettings = Settings.ReadSettings();
@@ -75,86 +76,75 @@ namespace ValorantAgentPicker
 
         private static void LoadMenu()
         {
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine($"REclipsent's Valorant Companion App - v{ver}");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Avaiable Operations:");
-            Console.ForegroundColor = ConsoleColor.White;
+            string strAgentRoul = "[white]Agent Roulette[/]";
+            string strStratRoul = "[white]Strat Roulette[/]";
+            string strSetting = "[white]Settings[/]";
+            string strQuit = "[white]Quit[/]";
+            AnsiConsole.MarkupLine($"[maroon]REclipsent's Valorant Companion App - v{ver}[/]");
+            var selections = new SelectionPrompt<string>();
+
             if (isAgentsLoaded)
             {
-                Console.WriteLine("1 - Agent Roulette");
+                selections.AddChoice(strAgentRoul);
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("1 - Agent Roulette - Unavailable");
-                Console.ForegroundColor = ConsoleColor.White;
+                selections.AddChoice("[red3_1]Agent Roulette - Unavailable[/]");
             }
             if (isStratsLoaded)
             {
-                Console.WriteLine("2 - Strat Roulette");
+                selections.AddChoice(strStratRoul);
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("2 - Strat Roulette - Unavailable");
-                Console.ForegroundColor = ConsoleColor.White;
+                selections.AddChoice("[red]Strat Roulette - Unavailable[/]");
             }
+            selections.AddChoices(
+                strSetting, strQuit
+                );
 
-            Console.WriteLine("3 - Settings");
-            Console.WriteLine("c - Clear Terminal");
-            Console.WriteLine("q - Quit");
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("Enter Choice:");
-            CleanConsole();
-            while (true)
+            AnsiConsole.MarkupLine("[red]Main Menu:[/]");
+            AnsiConsole.MarkupLine($"[white]{message}[/]");
+
+            string input = AnsiConsole.Prompt(selections
+                        .HighlightStyle(Color.Red));
+
+            if (input == strAgentRoul)
             {
-                Console.Write(">");
-                string input = Console.ReadLine();
-                switch (input)
+                message = "";
+                inDeeper = true;
+                while (inDeeper)
                 {
-                    case "1":
-                        if (!isAgentsLoaded)
-                        {
-                            Console.WriteLine("Agent operations unavaliable");
-                            break;
-                        }
-                        inDeeper = true;
-                        while (inDeeper)
-                        {
-                            AgentMenu();
-                        }
-                        Console.Clear();
-                        return;
-                    case "2":
-                        if (!isStratsLoaded)
-                        {
-                            Console.WriteLine("Strat operations unavaliable");
-                            break;
-                        }
-                        inDeeper = true;
-                        while (inDeeper)
-                        {
-                            StratRouletteMenu();
-                        }
-                        Console.Clear();
-                        return;
-                    case "3":
-                        AppSettingsMenu();
-                        Console.Clear();
-                        return;
-                    case "c":
-                        Console.Clear();
-                        return;
-                    case "q":
-                        Settings.WriteSettings(userSettings);
-                        Environment.Exit(0);
-                        break;
-                    default:
-                        Console.WriteLine("Invalid");
-                        break;
+                    AgentMenu();
                 }
+                Console.Clear();
+                return;
             }
+            else if (input == strStratRoul)
+            {
+                message = "";
+                inDeeper = true;
+                while (inDeeper)
+                {
+                    StratRouletteMenu();
+                }
+                Console.Clear();
+            }
+            else if (input == strSetting)
+            {
+                message = "";
+                AppSettingsMenu();
+            }
+            else if (input == strQuit)
+            {
+                Settings.WriteSettings(userSettings);
+                Environment.Exit(0);
+            }
+            else
+            {
+                message = "Unavaliable";
+            }
+            Console.Clear();
         }
 
         private static void AppSettingsMenu()
@@ -252,49 +242,127 @@ namespace ValorantAgentPicker
 
         private static void AgentMenu()
         {
-            Console.Clear();
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine("Valorant Agent Roulette Menu");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Choose Operation");
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("1 - Roll an Agent");
-            Console.WriteLine("2 - Agent Settings");
-            Console.WriteLine("c - Clear Terminal");
-            Console.WriteLine("q - Return to Main Menu");
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("Enter Choice:");
-            CleanConsole();
+            var layout = new Layout("Root").SplitColumns(new Layout("Left"),new Layout("Right"));
+
+            Agent agent = null;
             while (true)
             {
-                Console.Write(">");
-                string input = Console.ReadLine();
-                switch (input)
+                Console.Clear();
+
+                string strRoll = "[white]Roll an Agent[/]";
+                string strAgentSettings = "[white]Agent Settings[/]";
+                string strClear = "[white]Clear Terminal[/]";
+                string strReturn = "[white]Return to Main Menu[/]";
+
+                //AnsiConsole.MarkupLine($"[maroon]Valorant Agent Roulette Menu[/]");
+                var selections = new SelectionPrompt<string>();
+
+                var panel = new Panel("").Border(BoxBorder.None);
+
+                var thibng = panel.
+                if (agent != null)
                 {
-                    case "1":
-                        string agent = GetAgent();
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine($"{agent}");
-                        CleanConsole();
-                        break;
-                    case "2":
-                        AgentSettingsMenu();
-                        Settings.WriteSettings(userSettings);
-                        return;
-                    case "c":
-                        Console.Clear();
-                        return;
-                    case "q":
-                        inDeeper = false;
-                        return;
-                    default:
-                        Console.WriteLine("Invalid");
-                        break;
+                    layout["Left"].Update(panel);
+                    layout["Right"].Update(panel);
+                    AnsiConsole.Write(layout);
+                }
+
+                selections.AddChoices(
+                    strRoll, strAgentSettings, strClear, strReturn
+                    );
+
+                AnsiConsole.MarkupLine("[red]Valorant Agent Roulette Menu:[/]");
+                AnsiConsole.MarkupLine($"[white]{message}[/]");
+
+
+                string input = AnsiConsole.Prompt(selections
+                        .HighlightStyle(Color.Red));
+
+                if (input == strRoll)
+                {
+                    message = "";
+                    agent = GetAgent();
+                    if (agent != null)
+                    {
+                        layout["Right"].Update(panel);
+                        //layout["Right"].Update(new Panel(Align.Center(new Markup($"[yellow]{agent.Name}[/]"))).Expand()));
+                    }
+                    else
+                    {
+                        message = "No Enabled Agents";
+                    }
+
+                    //AnsiConsole.MarkupLine($"[yellow]{agent}[/]");
+                }
+                else if (input == strAgentSettings)
+                {
+                    message = "";
+                    AgentSettingsMenu();
+                    Settings.WriteSettings(userSettings);
+                    return;
+                }
+                else if (input == strClear)
+                {
+                    message = "";
+                    Console.Clear();
+                    return;
+                }
+                else if (input == strReturn)
+                {
+                    message = "";
+                    inDeeper = false;
+                    return;
+                }
+                else
+                {
+                    message = "Unavaliable";
                 }
             }
+            
+
+            //Console.Clear();
+            //Console.ForegroundColor = ConsoleColor.DarkRed;
+            //Console.WriteLine("Valorant Agent Roulette Menu");
+            //Console.ForegroundColor = ConsoleColor.Red;
+            //Console.WriteLine("Choose Operation");
+            //Console.ForegroundColor = ConsoleColor.White;
+            //Console.WriteLine("1 - Roll an Agent");
+            //Console.WriteLine("2 - Agent Settings");
+            //Console.WriteLine("c - Clear Terminal");
+            //Console.WriteLine("q - Return to Main Menu");
+            //Console.ForegroundColor = ConsoleColor.Cyan;
+            //Console.WriteLine("Enter Choice:");
+            //CleanConsole();
+            //while (true)
+            //{
+            //    Console.Write(">");
+            //    string input = Console.ReadLine();
+            //    switch (input)
+            //    {
+            //        case "1":
+            //            string agent = GetAgent();
+            //            Console.ForegroundColor = ConsoleColor.Yellow;
+            //            Console.WriteLine($"{agent}");
+            //            CleanConsole();
+            //            break;
+            //        case "2":
+            //            AgentSettingsMenu();
+            //            Settings.WriteSettings(userSettings);
+            //            return;
+            //        case "c":
+            //            Console.Clear();
+            //            return;
+            //        case "q":
+            //            inDeeper = false;
+            //            return;
+            //        default:
+            //            Console.WriteLine("Invalid");
+            //            break;
+            //    }
+            //}
         }
 
-        private static string GetAgent()
+        private static Agent GetAgent()
         {
             List<Agent> EnabledList = new List<Agent>();
             Random rnd = new Random();
@@ -311,24 +379,27 @@ namespace ValorantAgentPicker
 
             if (EnabledList.Count == 0)
             {
-                return "No Enabled Agents";
+                return null;
             }
 
             index = rnd.Next(EnabledList.Count);
 
             agent = EnabledList[index];
 
-            string agentName = agent.Name;
+            return agent;
 
-            string agentRole = agent.Role.ToString();
-            if (userSettings.returnRole)
-            {
-                return $"{agentName} - {agentRole}";
-            }
-            else
-            {
-                return agentName;
-            }
+            //string agentName = agent.Name;
+
+            //string agentRole = agent.Role.ToString();
+
+            ////if (userSettings.returnRole)
+            ////{
+            ////    return $"{agentName} - {agentRole}";
+            ////}
+            ////else
+            ////{
+            ////    return agentName;
+            ////}
         }
 
         private static void AgentSettingsMenu()
@@ -710,8 +781,15 @@ namespace ValorantAgentPicker
 
         static List<Agent> ReadAgentsFromCsv(string filePath)
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("(1/2) Reading Agents from CSV...");
+            AnsiConsole.Markup("[yellow](1/2) Reading Agents from CSV Located at: [/]");
+            var path = new TextPath(filePath);
+
+            path.RootStyle = new Style(foreground: Color.Yellow);
+            path.SeparatorStyle = new Style(foreground: Color.Yellow);
+            path.StemStyle = new Style(foreground: Color.Yellow);
+            path.LeafStyle = new Style(foreground: Color.Yellow);
+
+            AnsiConsole.Write(path);
 
             List<Agent> agents = new List<Agent>();
             try
@@ -738,25 +816,33 @@ namespace ValorantAgentPicker
             }
             catch (System.IO.FileNotFoundException)
             {
-                Console.WriteLine("Agents.csv dosen't exist inside the executing folder");
+                AnsiConsole.MarkupLine("[red]Agents.csv dosen't exist inside the executing folder [/]");
                 isAgentsLoaded = false;
                 return null;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Their was an unkown error reading CSV file:\n{ex}");
+                AnsiConsole.MarkupLine($"[red]Their was an unkown error reading CSV file:\n{ex}[/]");
                 isAgentsLoaded = false;
                 return null;
             }
-            Console.WriteLine($"Loaded {agents.Count} Agents from List");
+            AnsiConsole.MarkupLine($"[yellow]Loaded {agents.Count} Agents from List[/]");
             isAgentsLoaded = true;
             return agents;
         }
 
         static List<Strat> ReadStratsFromCsv(string filePath)
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("(2/2) Reading Strats from CSV...");
+            AnsiConsole.Markup("[yellow](2/2) Reading Strats from CSV Located at: [/]");
+
+            var path = new TextPath(filePath);
+
+            path.RootStyle = new Style(foreground: Color.Yellow);
+            path.SeparatorStyle = new Style(foreground: Color.Yellow);
+            path.StemStyle = new Style(foreground: Color.Yellow);
+            path.LeafStyle = new Style(foreground: Color.Yellow);
+
+            AnsiConsole.Write(path);
 
             List<Strat> strats = new List<Strat>();
             try
@@ -787,17 +873,17 @@ namespace ValorantAgentPicker
             }
             catch (System.IO.FileNotFoundException)
             {
-                Console.WriteLine("Strats.csv dosen't exist inside the executing folder");
+                AnsiConsole.MarkupLine("[red]Strats.csv dosen't exist inside the executing folder [/]");
                 isStratsLoaded = false;
                 return null;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Their was an unkown error reading CSV file:\n{ex}");
+                AnsiConsole.MarkupLine($"[red]Their was an unkown error reading CSV file:\n{ex}[/]");
                 isStratsLoaded = false;
                 return null;
             }
-            Console.WriteLine($"Loaded {strats.Count} Strats from List");
+            AnsiConsole.MarkupLine($"[yellow]Loaded {strats.Count} Strats from List[/]");
             isStratsLoaded = true;
             return strats;
         }
