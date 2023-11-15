@@ -14,7 +14,7 @@ namespace ValorantAgentPicker
 [red]CHANGES-
 [white]Rewritten Main Menu, Agent Menu, and Agent Settings Menu with Spectre.Console library
 [red]ISSUES-
-[white]Changing the consoles color through settings currently dosen't work[/][/][/][/][/]";
+[white]Changing the console's color through settings currently doesn't work[/][/][/][/][/]";
 
         public static void PrintBetaInfo()
         {
