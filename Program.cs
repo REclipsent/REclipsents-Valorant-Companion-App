@@ -242,8 +242,6 @@ namespace ValorantAgentPicker
 
         private static void AgentMenu()
         {
-            var layout = new Layout("Root").SplitColumns(new Layout("Left"),new Layout("Right"));
-
             Agent agent = null;
             while (true)
             {
@@ -257,16 +255,6 @@ namespace ValorantAgentPicker
                 //AnsiConsole.MarkupLine($"[maroon]Valorant Agent Roulette Menu[/]");
                 var selections = new SelectionPrompt<string>();
 
-                var panel = new Panel("").Border(BoxBorder.None);
-
-                var thibng = panel.
-                if (agent != null)
-                {
-                    layout["Left"].Update(panel);
-                    layout["Right"].Update(panel);
-                    AnsiConsole.Write(layout);
-                }
-
                 selections.AddChoices(
                     strRoll, strAgentSettings, strClear, strReturn
                     );
@@ -274,6 +262,38 @@ namespace ValorantAgentPicker
                 AnsiConsole.MarkupLine("[red]Valorant Agent Roulette Menu:[/]");
                 AnsiConsole.MarkupLine($"[white]{message}[/]");
 
+                if (agent != null)
+                {
+                    Color color = new Color();
+                    switch (agent.Role)
+                    {
+                        case AgentRole.Sentinel:
+                            color = Color.White;
+                            break;
+                        case AgentRole.Initiator: 
+                            color = Color.Blue; 
+                            break;
+                        case AgentRole.Controller:
+                            color = Color.Purple;
+                            break;
+                        case AgentRole.Duelist:
+                            color = Color.Orange1; 
+                            break;
+                    }
+
+                    AnsiConsole.MarkupLine("[white]Rolled Agent:[/]");
+
+                    if (userSettings.returnRole)
+                    {
+                        AnsiConsole.Write(new FigletText($"{agent.Name} - {agent.Role}").Color(color));
+                    }
+                    else
+                    {
+                        AnsiConsole.Write(new FigletText(agent.Name).Color(color));
+                    }
+
+                    AnsiConsole.WriteLine();
+                }
 
                 string input = AnsiConsole.Prompt(selections
                         .HighlightStyle(Color.Red));
@@ -282,16 +302,10 @@ namespace ValorantAgentPicker
                 {
                     message = "";
                     agent = GetAgent();
-                    if (agent != null)
-                    {
-                        layout["Right"].Update(panel);
-                        //layout["Right"].Update(new Panel(Align.Center(new Markup($"[yellow]{agent.Name}[/]"))).Expand()));
-                    }
-                    else
+                    if (agent == null)
                     {
                         message = "No Enabled Agents";
                     }
-
                     //AnsiConsole.MarkupLine($"[yellow]{agent}[/]");
                 }
                 else if (input == strAgentSettings)
@@ -318,48 +332,6 @@ namespace ValorantAgentPicker
                     message = "Unavaliable";
                 }
             }
-            
-
-            //Console.Clear();
-            //Console.ForegroundColor = ConsoleColor.DarkRed;
-            //Console.WriteLine("Valorant Agent Roulette Menu");
-            //Console.ForegroundColor = ConsoleColor.Red;
-            //Console.WriteLine("Choose Operation");
-            //Console.ForegroundColor = ConsoleColor.White;
-            //Console.WriteLine("1 - Roll an Agent");
-            //Console.WriteLine("2 - Agent Settings");
-            //Console.WriteLine("c - Clear Terminal");
-            //Console.WriteLine("q - Return to Main Menu");
-            //Console.ForegroundColor = ConsoleColor.Cyan;
-            //Console.WriteLine("Enter Choice:");
-            //CleanConsole();
-            //while (true)
-            //{
-            //    Console.Write(">");
-            //    string input = Console.ReadLine();
-            //    switch (input)
-            //    {
-            //        case "1":
-            //            string agent = GetAgent();
-            //            Console.ForegroundColor = ConsoleColor.Yellow;
-            //            Console.WriteLine($"{agent}");
-            //            CleanConsole();
-            //            break;
-            //        case "2":
-            //            AgentSettingsMenu();
-            //            Settings.WriteSettings(userSettings);
-            //            return;
-            //        case "c":
-            //            Console.Clear();
-            //            return;
-            //        case "q":
-            //            inDeeper = false;
-            //            return;
-            //        default:
-            //            Console.WriteLine("Invalid");
-            //            break;
-            //    }
-            //}
         }
 
         private static Agent GetAgent()
@@ -388,18 +360,6 @@ namespace ValorantAgentPicker
 
             return agent;
 
-            //string agentName = agent.Name;
-
-            //string agentRole = agent.Role.ToString();
-
-            ////if (userSettings.returnRole)
-            ////{
-            ////    return $"{agentName} - {agentRole}";
-            ////}
-            ////else
-            ////{
-            ////    return agentName;
-            ////}
         }
 
         private static void AgentSettingsMenu()
@@ -408,70 +368,71 @@ namespace ValorantAgentPicker
             while (true)
             {
                 Console.Clear();
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Settings:");
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Enter Number to Change Setting");
-                Console.ForegroundColor= ConsoleColor.Gray;
-                Console.WriteLine("*Note if you manually change all of a certain role manually this will not update");
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine($"1: Controllers: {enableControllers}");
-                Console.WriteLine($"2: Sentinels: {enableSentinels}");
-                Console.WriteLine($"3: Initiators: {enableInitiators}");
-                Console.WriteLine($"4: Duelists: {enableDuelists}");
-                Console.WriteLine($"5: Indvidual Agents Menu");
-                Console.WriteLine($"6: Print Agents Role: {userSettings.returnRole}");
-                Console.WriteLine("q - Return");
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine("Enter Choice:");
+                AnsiConsole.MarkupLine("[maroon]Settings:[/]");
+                AnsiConsole.MarkupLine("[red]Enter Number to Change Setting[/]");
+                AnsiConsole.MarkupLine("[grey]*Note if you manually change all of a certain role manually this will not update[/]");
+                string strControllers = $"[white]Controllers: {enableControllers}[/]";
+                string strSentinels = $"[white]Sentinels: {enableSentinels}[/]";
+                string strInitiators = $"[white]Initiators: {enableInitiators}[/]";
+                string strDuelists = $"[white]Duelists: {enableDuelists}[/]";
+                string strIndividual = $"[white]Indvidual Agents Menu[/]";
+                string strAgentRole = $"[white]Print Agents Role: {userSettings.returnRole}[/]";
+                string strQuit = "[white]Return[/]";
+                var selections = new SelectionPrompt<string>();
+
+                selections.AddChoices(
+                    strControllers, strSentinels, strInitiators, strDuelists, strIndividual, strAgentRole, strQuit
+                    );
                 CleanConsole();
                 if (Invalid)
                 {
-                    Console.WriteLine("Invalid Input");
-                    Console.Write(">");
+                    AnsiConsole.MarkupLine("[white]Invalid Input[/]");
                     Invalid = false;
+                }
+                string input = AnsiConsole.Prompt(selections
+                        .HighlightStyle(Color.Red));
+
+                if (input == strControllers)
+                {
+                    enableControllers = !enableControllers;
+                    ToggleAgents(AgentRole.Controller, enableControllers);
+                }
+                else if (input == strSentinels)
+                {
+                    enableSentinels = !enableSentinels;
+                    ToggleAgents(AgentRole.Sentinel, enableSentinels);
+                }
+                else if (input == strInitiators)
+                {
+                    enableInitiators = !enableInitiators;
+                    ToggleAgents(AgentRole.Initiator, enableInitiators);
+                }
+                else if (input == strDuelists)
+                {
+                    enableDuelists = !enableDuelists;
+                    ToggleAgents(AgentRole.Duelist, enableDuelists);
+                }
+                else if (input == strIndividual)
+                {
+                    bool returnToMain = ToggleAgentMenu();
+                    if (returnToMain)
+                    {
+                        Console.Clear();
+                        return;
+                    }
+                }
+                else if (input == strAgentRole)
+                {
+                    userSettings.returnRole = !userSettings.returnRole;
+                }
+                else if (input == strQuit)
+                {
+                    Console.Clear();
+                    return;
                 }
                 else
                 {
-                    Console.Write(">");
-                }
-                string input = Console.ReadLine();
-
-                switch (input)
-                {
-                    case "1":
-                        enableControllers = !enableControllers;
-                        ToggleAgents(AgentRole.Controller, enableControllers);
-                        break;
-                    case "2":
-                        enableSentinels = !enableSentinels;
-                        ToggleAgents(AgentRole.Sentinel, enableSentinels);
-                        break;
-                    case "3":
-                        enableInitiators = !enableInitiators;
-                        ToggleAgents(AgentRole.Initiator, enableInitiators);
-                        break;
-                    case "4":
-                        enableDuelists = !enableDuelists;
-                        ToggleAgents(AgentRole.Duelist, enableDuelists);
-                        break;
-                    case "5":
-                        bool returnToMain = ToggleAgentMenu();
-                        if (returnToMain)
-                        {
-                            Console.Clear();
-                            return;
-                        }
-                        break;
-                    case "6":
-                        userSettings.returnRole = !userSettings.returnRole;
-                        break;
-                    case "q":
-                        Console.Clear();
-                        return;
-                    default:
-                        Invalid = true;
-                        break;
+                    Invalid = true;
                 }
             }
         }
